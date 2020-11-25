@@ -6,13 +6,13 @@
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
+const int pir = 4;
 const int ledR = 3;
 const int ledB = 2;
 const int buzzer = 8;
 const int button = 7;
-int status = false;
-int buttonState = 0;
 int lock = false;
+int pirState = LOW;
 
 void setup() {
 	Serial.begin(9600);		// Initialize serial communications with the PC
@@ -27,9 +27,14 @@ void setup() {
   pinMode(ledB, OUTPUT);
   pinMode(buzzer, OUTPUT);
   pinMode(button, INPUT_PULLUP);
+  pinMode(pir, INPUT);  
 }
 
 void loop() {
+  if(lock){
+    detectMotion();
+  }
+  
   if (digitalRead(button)== LOW) {
     doorStatus();
     tone(buzzer, 1000);
@@ -100,5 +105,26 @@ void toggleLed(){
   } else if(lock){
     digitalWrite(ledR, HIGH);
     digitalWrite(ledB, LOW);
+  }
+}
+
+void detectMotion(){
+  int val = digitalRead(pir);  // read input value
+  if (val == HIGH) {            // check if the input is HIGH
+    if (pirState == LOW) {
+      // we have just turned on
+      Serial.println("Motion detected!");
+      tone(buzzer, 10000);
+      delay (3000);
+      noTone (buzzer);
+      pirState = HIGH;
+    }
+  } else {
+    if (pirState == HIGH){
+      // we have just turned of
+      Serial.println("Motion ended!");
+      // We only want to print on the output change, not state
+      pirState = LOW;
+    }
   }
 }
