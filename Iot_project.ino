@@ -9,6 +9,9 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 const int ledR = 3;
 const int ledB = 2;
 const int buzzer = 8;
+const int button = 7;
+int status = false;
+int buttonState = 0;
 int lock = false;
 
 void setup() {
@@ -23,9 +26,19 @@ void setup() {
   pinMode(ledR, OUTPUT);
   pinMode(ledB, OUTPUT);
   pinMode(buzzer, OUTPUT);
+  pinMode(button, INPUT_PULLUP);
 }
 
 void loop() {
+  if (digitalRead(button)== LOW) {
+    doorStatus();
+    tone(buzzer, 1000);
+    delay (200);
+    noTone (buzzer);
+    toggleLed();
+    delay(3000);
+  }
+  
 	if ( ! mfrc522.PICC_IsNewCardPresent()) {return;}
 
 	if ( ! mfrc522.PICC_ReadCardSerial()) {return;}
@@ -47,6 +60,8 @@ void loop() {
   Serial.println();
   Serial.print("access :");
   
+  
+  
   if (key == " 96 D6 90 BB")
   {
     doorStatus();
@@ -56,7 +71,7 @@ void loop() {
     
     Serial.print("access granted");
     
-  }else {
+  } else {
     tone(buzzer, 500);
     delay (1000);
     noTone (buzzer);
