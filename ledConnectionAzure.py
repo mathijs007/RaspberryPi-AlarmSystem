@@ -7,10 +7,10 @@ from azure.iot.device import IoTHubDeviceClient, Message
 
 CONNECTION_STRING = "HostName=IoTAlarm.azure-devices.net;DeviceId=IotDevice;SharedAccessKey=+Rt4fs6qCSGVTa9Uk/D0oNiEgPBTTO9D8LU/+JZcn2A="
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(23, GPIO.OUT)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(16, GPIO.OUT)
 
-led_state = GPIO.input(23)
+led_state = GPIO.input(16)
 MSG_TXT = '{{"led_state": {led_state}, "tijd": {tijd}}}'
 
 def iothub_client_init():
