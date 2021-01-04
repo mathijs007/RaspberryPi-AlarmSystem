@@ -1,7 +1,8 @@
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 from time import sleep
-from distanceSensor import distance, checkDistance
+from sensors.distanceSensor import distance, checkDistance
+from sensors.dht11Sensor import displayDHT11
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -16,7 +17,7 @@ distanceEcho = 13
 
 GPIO.setup(ledR, GPIO.OUT)
 GPIO.setup(ledB, GPIO.OUT)
-GPIO.setup(button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(button, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(buzzer, GPIO.OUT)
 GPIO.setup(distanceTrigger, GPIO.OUT)
 GPIO.setup(distanceEcho, GPIO.IN)
@@ -34,7 +35,7 @@ def scanCard(state):
 	return state
 
 def buttonPressed(state):
-	if GPIO.input(button)==0:
+	if GPIO.input(button)==GPIO.HIGH:
 		print("Button was pressed")
 		return enableLock(state)
 	return state
@@ -58,6 +59,7 @@ try:
 	while True:
 		BS = buttonPressed(BS)
 		BS = scanCard(BS)
+		displayDHT11()
 		if BS == True:
 			dist = distance(distanceTrigger, distanceEcho)
 			checkDistance(dist)
