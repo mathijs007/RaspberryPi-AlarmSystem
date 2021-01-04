@@ -8,6 +8,8 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
 BS=False
+alarmEncounter=False
+timer = 10
 ledR = 16
 ledB = 18
 button = 12
@@ -23,16 +25,17 @@ GPIO.setup(distanceTrigger, GPIO.OUT)
 GPIO.setup(distanceEcho, GPIO.IN)
 
 def scanCard(state):
-	reader = SimpleMFRC522()
+        reader = SimpleMFRC522()
 
-	try:
-		id, text = reader.read_no_block()
-		if id==781013894693:
-			print("access")
-			return enableLock(state)
-	finally:
-		sleep(1)
-	return state
+        try:
+                id, text = reader.read_no_block()
+                if id==781013894693:
+                        print("access")
+                        return enableLock(state)
+        finally:
+                sleep(1)
+        return state
+
 
 def buttonPressed(state):
 	if GPIO.input(button)==GPIO.HIGH:
@@ -42,6 +45,8 @@ def buttonPressed(state):
 
 def enableLock(state):
 	GPIO.output(buzzer, True)
+	alarmReset()
+
 	if state==False:
 		GPIO.output(ledR,True)
 		GPIO.output(ledB,False)
@@ -52,8 +57,14 @@ def enableLock(state):
 		GPIO.output(ledB,True)
 		state=False
 		sleep(.5)
-	GPIO.output(buzzer, False)
 	return state
+
+def alarmReset():
+	global timer
+	global alarmEncounter
+	alarmEncounter=False
+	timer = 10
+	GPIO.output(buzzer, False)
 
 try:
 	while True:
@@ -61,10 +72,19 @@ try:
 		BS = scanCard(BS)
 		displayDHT11()
 		if BS == True:
-			dist = distance(distanceTrigger, distanceEcho)
-			checkDistance(dist)
+			if alarmEncounter == True:
+				if timer == 0:
+					print("trespasser")
+					GPIO.output(buzzer, True)
+				else:
+					timer -= 1
+					print(timer)
+			else:
+				dist = distance(distanceTrigger, distanceEcho)
+				alarmEncounter = checkDistance(dist)
 		sleep(.5)
 finally:
 	GPIO.output(ledR, False)
 	GPIO.output(ledB, False)
+	alarmReset()
 	GPIO.cleanup()

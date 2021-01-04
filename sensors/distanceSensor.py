@@ -29,6 +29,9 @@ def distance(trigger, echo):
     return distance
 
 def checkDistance(dist):
-	if dist < 200:
+	# Checking for 20 cm detection
+	if dist < 20:
 		print ("Measured Distance = %.1f cm" % dist)
+		return True
+	return False
 
