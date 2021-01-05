@@ -3,10 +3,14 @@ from mfrc522 import SimpleMFRC522
 from time import sleep
 from sensors.distanceSensor import distance, checkDistance
 from sensors.dht11Sensor import displayDHT11
+from connection.bluetoothFile import lookForDevice
+from connection.ledConnectionAzure import sendLedToAzure
+import asyncio
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
+# Setup variables
 BS=False
 alarmEncounter=False
 timer = 10
@@ -16,7 +20,9 @@ button = 12
 buzzer = 7
 distanceTrigger = 11
 distanceEcho = 13
+nameOfDevice = "OnePlus Mathijs"
 
+# Setup GPIO
 GPIO.setup(ledR, GPIO.OUT)
 GPIO.setup(ledB, GPIO.OUT)
 GPIO.setup(button, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -71,6 +77,7 @@ try:
 		BS = buttonPressed(BS)
 		BS = scanCard(BS)
 		displayDHT11()
+		asyncio.run(sendLedToAzure(GPIO.input(ledR)))
 		if BS == True:
 			if alarmEncounter == True:
 				if timer == 0:
@@ -81,8 +88,10 @@ try:
 					print(timer)
 			else:
 				dist = distance(distanceTrigger, distanceEcho)
-				alarmEncounter = checkDistance(dist)
-		sleep(.5)
+				isRightDevice = lookForDevice(nameOfDevice)
+				alarmEncounter = checkDistance(dist, isRightDevice)
+		#sleep(1)
+
 finally:
 	GPIO.output(ledR, False)
 	GPIO.output(ledB, False)

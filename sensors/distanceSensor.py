@@ -28,9 +28,10 @@ def distance(trigger, echo):
  
     return distance
 
-def checkDistance(dist):
+def checkDistance(dist, ownDeviceIsFound):
 	# Checking for 20 cm detection
-	if dist < 20:
+	print ("Detection found, Owner = %r" % ownDeviceIsFound)
+	if dist < 20 and ownDeviceIsFound is not True:
 		print ("Measured Distance = %.1f cm" % dist)
 		return True
 	return False
